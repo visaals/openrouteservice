@@ -242,6 +242,7 @@ public class CarFlagEncoder extends ORSAbstractFlagEncoder {
         		return 1; 
         }
 
+        System.out.println("speed " + speed);
         return speed;
     }
 
