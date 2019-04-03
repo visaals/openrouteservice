@@ -24,6 +24,9 @@ import com.graphhopper.util.Helper;
 import com.graphhopper.util.PMap;
 import org.apache.log4j.Logger;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +39,7 @@ import java.util.Map;
  * @author Nop
  */
 public class CarFlagEncoder extends ORSAbstractFlagEncoder {
-
+    PrintStream  speedFile;
     private static Logger LOGGER = Logger.getLogger(CarFlagEncoder.class);
 
     // This value determines the maximal possible on roads with bad surfaces
@@ -181,6 +184,12 @@ public class CarFlagEncoder extends ORSAbstractFlagEncoder {
         
         _speedLimitHandler = new SpeedLimitHandler(this.toString(), defaultSpeedMap, badSurfaceSpeedMap, trackTypeSpeedMap);
 
+        try {
+            speedFile = new PrintStream(new FileOutputStream("speed.txt"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         init();
     }
 
@@ -242,7 +251,8 @@ public class CarFlagEncoder extends ORSAbstractFlagEncoder {
         		return 1; 
         }
 
-        System.out.println("speed " + speed);
+        speedFile.println(speed);
+
         return speed;
     }
 
