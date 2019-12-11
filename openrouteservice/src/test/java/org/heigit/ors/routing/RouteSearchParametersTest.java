@@ -243,14 +243,6 @@ public class RouteSearchParametersTest {
         Assert.assertTrue("turn restrictions", routeSearchParameters.requiresDynamicWeights());
 
         routeSearchParameters = new RouteSearchParameters();
-        routeSearchParameters.setWeightingMethod(WeightingMethod.SHORTEST);
-        Assert.assertTrue("shortest", routeSearchParameters.requiresDynamicWeights());
-
-        routeSearchParameters = new RouteSearchParameters();
-        routeSearchParameters.setWeightingMethod(WeightingMethod.RECOMMENDED);
-        Assert.assertTrue("recommended", routeSearchParameters.requiresDynamicWeights());
-
-        routeSearchParameters = new RouteSearchParameters();
         routeSearchParameters.setProfileType(RoutingProfileType.DRIVING_HGV);
         routeSearchParameters.setVehicleType(HeavyVehicleAttributes.HGV);
         Assert.assertTrue("heavy vehicle", routeSearchParameters.requiresDynamicWeights());

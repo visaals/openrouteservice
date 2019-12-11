@@ -39,6 +39,7 @@ import com.vividsolutions.jts.geom.LineString;
 import org.heigit.ors.mapmatching.RouteSegmentInfo;
 import org.heigit.ors.routing.RoutingProfile;
 import org.heigit.ors.routing.RoutingProfileCategory;
+import org.heigit.ors.routing.WeightingMethod;
 import org.heigit.ors.routing.graphhopper.extensions.core.CoreAlgoFactoryDecorator;
 import org.heigit.ors.routing.graphhopper.extensions.core.CoreLMAlgoFactoryDecorator;
 import org.heigit.ors.routing.graphhopper.extensions.core.PrepareCore;
@@ -543,6 +544,18 @@ public class ORSGraphHopper extends GraphHopper {
 
 	public final boolean isCoreEnabled() {
 		return coreFactoryDecorator.isEnabled();
+	}
+
+	public final boolean isCoreAvailable(String weighting) {
+		return coreFactoryDecorator.isEnabled() && coreFactoryDecorator.getWeightingsAsStrings().contains(weighting);
+	}
+
+	public final boolean isALTAvailable(String weighting) {
+		return getLMFactoryDecorator().isEnabled() && getLMFactoryDecorator().getWeightingsAsStrings().contains(weighting);
+	}
+
+	public final boolean isCHAvailable(String weighting) {
+		return getCHFactoryDecorator().isEnabled() && getCHFactoryDecorator().getWeightingsAsStrings().contains(weighting);
 	}
 
 	public void initCoreAlgoFactoryDecorator() {

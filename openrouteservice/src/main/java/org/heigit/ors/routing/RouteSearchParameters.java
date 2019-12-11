@@ -503,8 +503,6 @@ public class RouteSearchParameters {
             || hasAvoidBorders()
             || hasAvoidCountries()
             || getConsiderTurnRestrictions()
-            || getWeightingMethod() == WeightingMethod.SHORTEST
-            || getWeightingMethod() == WeightingMethod.RECOMMENDED
             || isProfileTypeHeavyVehicle() && getVehicleType() > 0
             || isProfileTypeDriving() && hasParameters(VehicleParameters.class)
         ;
