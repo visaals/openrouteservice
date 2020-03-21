@@ -39,15 +39,13 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import org.heigit.ors.mapmatching.RouteSegmentInfo;
+import org.heigit.ors.routing.RoutingProfile;
 import org.heigit.ors.routing.RoutingProfileCategory;
 import org.heigit.ors.routing.graphhopper.extensions.core.CoreAlgoFactoryDecorator;
 import org.heigit.ors.routing.graphhopper.extensions.core.CoreLMAlgoFactoryDecorator;
 import org.heigit.ors.routing.graphhopper.extensions.core.PrepareCore;
 import org.heigit.ors.routing.graphhopper.extensions.edgefilters.EdgeFilterSequence;
-import org.heigit.ors.routing.graphhopper.extensions.edgefilters.core.AvoidBordersCoreEdgeFilter;
-import org.heigit.ors.routing.graphhopper.extensions.edgefilters.core.AvoidFeaturesCoreEdgeFilter;
-import org.heigit.ors.routing.graphhopper.extensions.edgefilters.core.HeavyVehicleCoreEdgeFilter;
-import org.heigit.ors.routing.graphhopper.extensions.edgefilters.core.WheelchairCoreEdgeFilter;
+import org.heigit.ors.routing.graphhopper.extensions.edgefilters.core.*;
 import org.heigit.ors.routing.graphhopper.extensions.util.ORSParameters;
 import org.heigit.ors.util.CoordTools;
 import org.slf4j.Logger;
@@ -518,6 +516,7 @@ public class ORSGraphHopper extends GraphHopper {
 		/* Initialize edge filter sequence */
 
 		EdgeFilterSequence coreEdgeFilter = new EdgeFilterSequence();
+
 		/* Heavy vehicle filter */
 
 		if (encodingManager.hasEncoder("heavyvehicle")) {
@@ -538,6 +537,12 @@ public class ORSGraphHopper extends GraphHopper {
 
 		if (routingProfileCategory == RoutingProfileCategory.WHEELCHAIR) {
 			coreEdgeFilter.add(new WheelchairCoreEdgeFilter(gs));
+		}
+
+		/* Time-dependent edges */
+
+		if (RoutingProfile.isTimeDependent(encodingManager)) {
+			coreEdgeFilter.add(new TimeDependentCoreEdgeFilter(gs));
 		}
 
 		/* End filter sequence initialization */

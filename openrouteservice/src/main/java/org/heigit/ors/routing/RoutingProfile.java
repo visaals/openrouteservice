@@ -17,7 +17,6 @@ import com.graphhopper.GHRequest;
 import com.graphhopper.GHResponse;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.routing.ch.PrepareContractionHierarchies;
-import com.graphhopper.routing.profiles.EncodedValue;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.Graph;
@@ -1127,5 +1126,13 @@ public class RoutingProfile {
 
     public int hashCode() {
         return mGraphHopper.getGraphHopperStorage().getDirectory().getLocation().hashCode();
+    }
+
+    public static boolean isTimeDependent(EncodingManager encodingManager) {
+        for (FlagEncoder encoder : encodingManager.fetchEdgeEncoders())
+            if (encodingManager.hasEncodedValue(encodingManager.getKey(encoder, "conditional_access")) ||
+                    encodingManager.hasEncodedValue(encodingManager.getKey(encoder, "conditional_speed")) )
+                return true;
+        return false;
     }
 }

@@ -81,6 +81,7 @@ public class PrepareCore extends AbstractAlgoPreparation implements RoutingAlgor
         this.traversalMode = chProfile.getTraversalMode();
         this.weighting = chProfile.getWeighting();
         this.restrictionFilter = restrictionFilter;
+        weighting.init(ghStorage);
         prepareWeighting = new PreparationWeighting(weighting);
         this.dir = dir;
     }

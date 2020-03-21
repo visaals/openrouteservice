@@ -61,6 +61,7 @@ public class PrepareCoreLandmarks extends AbstractAlgoPreparation {
         this.graph = graph;
         this.defaultActiveLandmarks = activeLandmarks;
         this.weighting = weighting;
+        weighting.init(graph);
         this.landmarksFilter = landmarksFilter;
         lms = new CoreLandmarkStorage(dir, graph, coreNodeIdMap, weighting, landmarksFilter, landmarks);
     }
