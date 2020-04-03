@@ -46,6 +46,7 @@ import org.heigit.ors.matrix.algorithms.MatrixAlgorithm;
 import org.heigit.ors.matrix.algorithms.MatrixAlgorithmFactory;
 import org.heigit.ors.routing.configuration.RouteProfileConfiguration;
 import org.heigit.ors.routing.graphhopper.extensions.*;
+import org.heigit.ors.routing.graphhopper.extensions.core.PrepareCore;
 import org.heigit.ors.routing.graphhopper.extensions.storages.GraphStorageUtils;
 import org.heigit.ors.routing.graphhopper.extensions.storages.builders.BordersGraphStorageBuilder;
 import org.heigit.ors.routing.graphhopper.extensions.storages.builders.GraphStorageBuilder;
@@ -595,13 +596,13 @@ public class RoutingProfile {
         try {
             String weightingStr = Helper.isEmpty(req.getWeightingMethod()) ? VAL_FASTEST : req.getWeightingMethod();
             Graph graph = null;
-            if (!req.getFlexibleMode() && gh.getCHFactoryDecorator().isEnabled() && gh.getCHFactoryDecorator().getCHProfileStrings().contains(weightingStr)) {
+//            if (!req.getFlexibleMode() && gh.getCHFactoryDecorator().isEnabled() && gh.getCHFactoryDecorator().getCHProfileStrings().contains(weightingStr)) {
                 HintsMap map = new HintsMap(weightingStr);
                 map.setVehicle(encoderName);
-                graph = gh.getGraphHopperStorage().getCHGraph(((PrepareContractionHierarchies) gh.getAlgorithmFactory(map)).getCHProfile());
-            }
-            else
-                graph = gh.getGraphHopperStorage().getBaseGraph();
+                graph = gh.getGraphHopperStorage().getCHGraph(((PrepareCore) gh.getAlgorithmFactory(map)).getCHProfile());
+//            }
+//            else
+//                graph = gh.getGraphHopperStorage().getBaseGraph();
 
             MatrixSearchContextBuilder builder = new MatrixSearchContextBuilder(gh.getLocationIndex(), DefaultEdgeFilter.allEdges(flagEncoder), req.getResolveLocations());
             MatrixSearchContext mtxSearchCntx = builder.create(graph, req.getSources(), req.getDestinations(), MatrixServiceSettings.getMaximumSearchRadius());

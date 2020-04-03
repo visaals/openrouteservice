@@ -391,6 +391,10 @@ public class PrepareCore extends AbstractAlgoPreparation implements RoutingAlgor
         return chProfile;
     }
 
+    public Weighting getPrepareWeighting() {
+        return this.prepareWeighting;
+    }
+
     private String getTimesAsString() {
         return "t(dijk):" + Helper.round2(dijkstraTime) + ", t(period):" + Helper.round2(periodTime) + ", t(lazy):"
                 + Helper.round2(lazyTime) + ", t(neighbor):" + Helper.round2(neighborTime);

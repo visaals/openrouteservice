@@ -17,13 +17,16 @@ import com.graphhopper.GraphHopper;
 import org.heigit.ors.matrix.MatrixRequest;
 import org.heigit.ors.matrix.algorithms.dijkstra.DijkstraMatrixAlgorithm;
 import org.heigit.ors.matrix.algorithms.rphast.RPHASTMatrixAlgorithm;
+import org.heigit.ors.routing.graphhopper.extensions.ORSGraphHopper;
 
 public class MatrixAlgorithmFactory {
 	private MatrixAlgorithmFactory() {}
 
 	public static MatrixAlgorithm createAlgorithm(MatrixRequest req, GraphHopper gh) {
 		if (!req.getFlexibleMode() && gh.isCHEnabled())
-			return new RPHASTMatrixAlgorithm();
+			return new RPHASTMatrixAlgorithm().setAlgorithm(false);
+		else if(((ORSGraphHopper)gh).isCoreEnabled())
+			return new RPHASTMatrixAlgorithm().setAlgorithm(true);
 		else
 			return new DijkstraMatrixAlgorithm();
 	}

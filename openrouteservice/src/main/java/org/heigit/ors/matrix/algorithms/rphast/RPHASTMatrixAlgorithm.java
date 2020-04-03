@@ -29,18 +29,23 @@ import org.heigit.ors.matrix.MatrixRequest;
 import org.heigit.ors.matrix.MatrixResult;
 import org.heigit.ors.matrix.MultiTreeMetricsExtractor;
 import org.heigit.ors.matrix.algorithms.AbstractMatrixAlgorithm;
+import org.heigit.ors.routing.algorithms.AbstractManyToManyRoutingAlgorithm;
+import org.heigit.ors.routing.algorithms.CoreRPHASTAlgorithm;
 import org.heigit.ors.routing.algorithms.RPHASTAlgorithm;
+import org.heigit.ors.routing.graphhopper.extensions.ORSGraphHopper;
+import org.heigit.ors.routing.graphhopper.extensions.core.PrepareCore;
 import org.heigit.ors.routing.graphhopper.extensions.storages.MultiTreeSPEntry;
 
 public class RPHASTMatrixAlgorithm extends AbstractMatrixAlgorithm {
-	private PrepareContractionHierarchies prepareCH;
+	private PrepareCore prepareCH;
 	private MultiTreeMetricsExtractor pathMetricsExtractor;
+	private AbstractManyToManyRoutingAlgorithm algorithm;
 
 	@Override
 	public void init(MatrixRequest req, GraphHopper gh, Graph graph, FlagEncoder encoder, Weighting weighting) {
 		super.init(req, gh, graph, encoder, weighting);
 
-		prepareCH = graphHopper.getCHFactoryDecorator().getPreparations().get(0);
+		prepareCH = ((ORSGraphHopper)graphHopper).getCoreFactoryDecorator().getPreparations().get(0);
 		pathMetricsExtractor = new MultiTreeMetricsExtractor(req.getMetrics(), graph, this.encoder, weighting,
 				req.getUnits());
 	}
@@ -65,8 +70,8 @@ public class RPHASTMatrixAlgorithm extends AbstractMatrixAlgorithm {
 			for (int srcIndex = 0; srcIndex < srcData.size(); srcIndex++) 
 				pathMetricsExtractor.setEmptyValues(srcIndex, dstData, times, distances, weights);
 		} else {
-			RPHASTAlgorithm algorithm = new RPHASTAlgorithm(graph, prepareCH.getPrepareWeighting(),
-					TraversalMode.NODE_BASED);
+//			RPHASTAlgorithm algorithm = new RPHASTAlgorithm(graph, prepareCH.getPrepareWeighting(),
+//					TraversalMode.NODE_BASED);
 			
 			int[] srcIds = getValidNodeIds(srcData.getNodeIds());
 			int[] destIds = getValidNodeIds(dstData.getNodeIds());
@@ -100,6 +105,12 @@ public class RPHASTMatrixAlgorithm extends AbstractMatrixAlgorithm {
 			mtxResult.setTable(MatrixMetricsType.WEIGHT, weights);
 
 		return mtxResult;
+	}
+
+	public RPHASTMatrixAlgorithm setAlgorithm(boolean flexible){
+		this.algorithm = !flexible ? new RPHASTAlgorithm(graph, prepareCH.getPrepareWeighting(), TraversalMode.NODE_BASED)
+				: new CoreRPHASTAlgorithm(graph, prepareCH.getPrepareWeighting(), TraversalMode.NODE_BASED);
+		return this;
 	}
 	
 	private int[] getValidNodeIds(int[] nodeIds) {
