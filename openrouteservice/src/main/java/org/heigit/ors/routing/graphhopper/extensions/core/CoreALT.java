@@ -44,23 +44,22 @@ public class CoreALT extends AbstractCoreRoutingAlgorithm {
     protected AStarEntry currTo;
     protected IntObjectMap<AStarEntry> bestWeightMapFrom;
     protected IntObjectMap<AStarEntry> bestWeightMapTo;
-    private IntObjectMap<AStarEntry> bestWeightMapOther;
-    private ConsistentWeightApproximator weightApprox;
-    private IntHashSet ignoreExplorationFrom = new IntHashSet();
-    private IntHashSet ignoreExplorationTo = new IntHashSet();
+    protected IntObjectMap<AStarEntry> bestWeightMapOther;
+    protected PriorityQueue<AStarEntry> fromPriorityQueueCH;
+    protected PriorityQueue<AStarEntry> toPriorityQueueCH;
+    protected PriorityQueue<AStarEntry> fromPriorityQueueCore;
+    protected PriorityQueue<AStarEntry> toPriorityQueueCore;
+    protected int from;
+    protected int to;
+    protected int fromProxy;
+    protected int toProxy;
 
-    private PriorityQueue<AStarEntry> fromPriorityQueueCH;
-    private PriorityQueue<AStarEntry> toPriorityQueueCH;
-    private PriorityQueue<AStarEntry> fromPriorityQueueCore;
-    private PriorityQueue<AStarEntry> toPriorityQueueCore;
-
-    int from;
-    int to;
-    int fromProxy;
-    int toProxy;
+    protected IntHashSet ignoreExplorationFrom = new IntHashSet();
+    protected IntHashSet ignoreExplorationTo = new IntHashSet();
 
     double approximatorOffset;
 
+    protected ConsistentWeightApproximator weightApprox;
 
     public CoreALT(Graph graph, Weighting weighting, TraversalMode tMode) {
         super(graph, weighting, tMode);
@@ -227,7 +226,7 @@ public class CoreALT extends AbstractCoreRoutingAlgorithm {
 
     }
 
-    private void initApproximator() {
+    protected void initApproximator() {
         if (weightApprox.getApproximation() instanceof CoreLMApproximator && weightApprox.getReverseApproximation() instanceof CoreLMApproximator) {
             CoreLMApproximator forwardApproximator = (CoreLMApproximator) weightApprox.getApproximation();
             forwardApproximator.setTo(toProxy);
@@ -248,7 +247,7 @@ public class CoreALT extends AbstractCoreRoutingAlgorithm {
         }
     }
 
-    private void recalculateWeights(PriorityQueue<AStarEntry> queue, boolean reverse) {
+    protected void recalculateWeights(PriorityQueue<AStarEntry> queue, boolean reverse) {
         AStarEntry[] entries = queue.toArray(new AStarEntry[queue.size()]);
 
         queue.clear();
@@ -322,7 +321,7 @@ public class CoreALT extends AbstractCoreRoutingAlgorithm {
         return true;
     }
 
-    private void fillEdgesALT(AStarEntry currEdge, PriorityQueue<AStarEntry> prioQueueOpenSet,
+    void fillEdgesALT(AStarEntry currEdge, PriorityQueue<AStarEntry> prioQueueOpenSet,
                               IntObjectMap<AStarEntry> bestWeightMap, IntHashSet ignoreExploration, EdgeExplorer explorer,
                               boolean reverse) {
 

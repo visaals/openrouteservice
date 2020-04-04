@@ -18,6 +18,7 @@ public class WeightingMethod {
 	public static final int FASTEST = 1;
 	public static final int SHORTEST = 2;
 	public static final int RECOMMENDED = 3;
+	public static final int TD_FASTEST = 4;
 
 	private  WeightingMethod() {}
 
@@ -27,7 +28,9 @@ public class WeightingMethod {
 		} else if ("shortest".equalsIgnoreCase(method)) {
 			return WeightingMethod.SHORTEST;
 		} else if ("recommended".equalsIgnoreCase(method)) {
-			return WeightingMethod.RECOMMENDED; 
+			return WeightingMethod.RECOMMENDED;
+		} else if ("td_fastest".equalsIgnoreCase(method)) {
+			return WeightingMethod.TD_FASTEST;
 		}
 		return WeightingMethod.UNKNOWN;
 	}
@@ -40,6 +43,8 @@ public class WeightingMethod {
 			return "shortest";
 		case RECOMMENDED:
 			return "recommended";
+		case TD_FASTEST:
+			return "td_fastest";
 		default:
 			return "";
 		}

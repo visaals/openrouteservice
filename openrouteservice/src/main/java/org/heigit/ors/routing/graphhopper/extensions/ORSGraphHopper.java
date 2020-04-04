@@ -278,6 +278,8 @@ public class ORSGraphHopper extends GraphHopper {
 
 					queryGraph = new QueryGraph(getGraphHopperStorage().getCHGraph(chProfile));
 					queryGraph.lookup(qResults);
+
+                    //weighting = createWeighting(hints, encoder, queryGraph);
 				}
 				else{
 					if (getCHFactoryDecorator().isEnabled() && !disableCH) {

@@ -15,7 +15,6 @@ package org.heigit.ors.routing.graphhopper.extensions.core;
 
 import com.graphhopper.coll.GHTreeMapComposed;
 import com.graphhopper.routing.*;
-import com.graphhopper.routing.ch.PreparationWeighting;
 import com.graphhopper.routing.util.*;
 import com.graphhopper.routing.weighting.Weighting;
 import com.graphhopper.storage.*;
@@ -39,7 +38,7 @@ import static com.graphhopper.util.Parameters.Algorithms.DIJKSTRA_BI;
 public class PrepareCore extends AbstractAlgoPreparation implements RoutingAlgorithmFactory {
     private static final Logger LOGGER = Logger.getLogger(PrepareCore.class);
     private final CHProfile chProfile;
-    private final PreparationWeighting prepareWeighting;
+    private final CorePreparationWeighting prepareWeighting;
     private final TraversalMode traversalMode;
     private final EdgeFilter restrictionFilter;
     private final GraphHopperStorage ghStorage;
@@ -82,7 +81,7 @@ public class PrepareCore extends AbstractAlgoPreparation implements RoutingAlgor
         this.weighting = chProfile.getWeighting();
         this.restrictionFilter = restrictionFilter;
         weighting.init(ghStorage);
-        prepareWeighting = new PreparationWeighting(weighting);
+        prepareWeighting = new CorePreparationWeighting(weighting);
         this.dir = dir;
     }
 
@@ -505,11 +504,16 @@ public class PrepareCore extends AbstractAlgoPreparation implements RoutingAlgor
     @Override
     public RoutingAlgorithm createAlgo(Graph graph, AlgorithmOptions opts) {
         AbstractCoreRoutingAlgorithm algo;
+        String algoStr = opts.getAlgorithm();
 
-        // TODO: Proper way of switching between Dijkstra and AStar in core
-        String algoStr = ASTAR_BI;
-
-        if (ASTAR_BI.equals(algoStr)) {
+        if ("td_calt".equals(algoStr)) {
+            TDCoreALT tmpAlgo = new TDCoreALT(graph, prepareWeighting, opts.getWeighting(), opts.getTraversalMode());
+            tmpAlgo.setApproximation(RoutingAlgorithmFactorySimple.getApproximation(ASTAR_BI, opts, graph.getNodeAccess()));
+            if (opts.getHints().has("arrival"))
+                tmpAlgo.reverse();
+            algo = tmpAlgo;
+        }
+        else if (ASTAR_BI.equals(algoStr)) {
             CoreALT tmpAlgo = new CoreALT(graph, prepareWeighting, traversalMode);
             tmpAlgo.setApproximation(RoutingAlgorithmFactorySimple.getApproximation(ASTAR_BI, opts, graph.getNodeAccess()));
             algo = tmpAlgo;

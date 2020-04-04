@@ -68,6 +68,8 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.heigit.ors.routing.WeightingMethod.*;
+
 /**
  * This class generates {@link RoutingProfile} classes and is used by mostly all service classes e.g.
  * <p>
@@ -781,7 +783,7 @@ public class RoutingProfile {
                 req.getHints().merge(props);
 
             if (supportWeightingMethod(profileType)) {
-                if (weightingMethod == WeightingMethod.FASTEST) {
+                if (weightingMethod == FASTEST) {
                     req.setWeighting(VAL_FASTEST);
                     req.getHints().put(KEY_WEIGHTING_METHOD, VAL_FASTEST);
                 } else if (weightingMethod == WeightingMethod.SHORTEST) {
@@ -894,14 +896,15 @@ public class RoutingProfile {
                 req.getHints().merge(props);
 
             if (supportWeightingMethod(profileType)) {
-                if (weightingMethod == WeightingMethod.FASTEST) {
-                    req.setWeighting(VAL_FASTEST);
-                    req.getHints().put(KEY_WEIGHTING_METHOD, hasTimeDependentSpeed(searchParams, searchCntx) ? "td_fastest" : VAL_FASTEST);
-                } else if (weightingMethod == WeightingMethod.SHORTEST) {
+                if (weightingMethod == FASTEST) {
+                    String weighting = getName(hasTimeDependentSpeed(searchParams, searchCntx) ? TD_FASTEST : FASTEST);
+                    req.setWeighting(weighting);
+                    req.getHints().put(KEY_WEIGHTING_METHOD, weighting);
+                } else if (weightingMethod == SHORTEST) {
                     req.setWeighting(VAL_SHORTEST);
                     req.getHints().put(KEY_WEIGHTING_METHOD, VAL_SHORTEST);
                     flexibleMode = true;
-                } else if (weightingMethod == WeightingMethod.RECOMMENDED) {
+                } else if (weightingMethod == RECOMMENDED) {
                     req.setWeighting(VAL_FASTEST);
                     req.getHints().put(KEY_WEIGHTING_METHOD, "recommended");
                     flexibleMode = true;
@@ -930,18 +933,23 @@ public class RoutingProfile {
                 flexibleMode = true;
             }
 
-            // use time-dependent A*
             if (searchParams.isTimeDependent()) {
+                if (searchParams.hasDeparture())
+                    req.getHints().put("departure", searchParams.getDeparture());
+                else if (searchParams.hasArrival())
+                    req.getHints().put("arrival", searchParams.getArrival());
+                // use default to time-dependent A*
                 req.setAlgorithm(Parameters.Algorithms.TD_ASTAR);
                 req.getHints().put(KEY_CORE_DISABLE, true);
                 req.getHints().put(KEY_CH_DISABLE, true);
                 if (mGraphHopper.getLMFactoryDecorator().isEnabled())
                     req.getHints().put(KEY_LM_DISABLE, false);
-                if (searchParams.hasDeparture())
-                    req.getHints().put("departure", searchParams.getDeparture());
-                else if (searchParams.hasArrival())
-                    req.getHints().put("arrival", searchParams.getArrival());
-
+                // use time-dependent CALT if availanble
+                if (mGraphHopper.isCoreEnabled()) {
+                    req.setAlgorithm("td_calt");
+                    req.getHints().put(KEY_CORE_DISABLE, false);
+                    req.getHints().put(KEY_LM_DISABLE, true);
+                }
             } else {
                 if (searchParams.requiresDynamicWeights() || flexibleMode) {
                     if (mGraphHopper.isCHEnabled())

@@ -14,7 +14,6 @@
 package org.heigit.ors.routing.graphhopper.extensions.core;
 
 import com.graphhopper.routing.DijkstraOneToMany;
-import com.graphhopper.routing.ch.PreparationWeighting;
 import com.graphhopper.routing.ch.PrepareEncoder;
 import com.graphhopper.routing.util.DefaultEdgeFilter;
 import com.graphhopper.routing.util.EdgeFilter;
@@ -38,7 +37,7 @@ import java.util.Map;
 class CoreNodeContractor {
     private final GraphHopperStorage ghStorage;
     private final CHGraph prepareGraph;
-    private final PreparationWeighting prepareWeighting;
+    private final CorePreparationWeighting prepareWeighting;
     // todo: so far node contraction can only be done for node-based graph traversal
     private final CHProfile chProfile;
     private final DataAccess originalEdges;
@@ -64,7 +63,7 @@ class CoreNodeContractor {
         // todo: it would be nice to check if ghStorage is frozen here
         this.ghStorage = ghStorage;
         this.prepareGraph = prepareGraph;
-        this.prepareWeighting = new PreparationWeighting(chProfile.getWeighting());
+        this.prepareWeighting = new CorePreparationWeighting(chProfile.getWeighting());
         this.chProfile = chProfile;
         originalEdges = dir.find("original_edges_" + AbstractWeighting.weightingToFileName(chProfile.getWeighting()));
         originalEdges.create(1000);
@@ -168,9 +167,12 @@ class CoreNodeContractor {
                 if (endNode == wToNode && prepareAlgo.getWeight(endNode) <= existingDirectWeight)
                     // FOUND witness path, so do not add shortcut
                     continue;
+
+                long time = prepareWeighting.calcMillis(incomingEdges, true, EdgeIterator.NO_EDGE) +
+                        prepareWeighting.calcMillis(outgoingEdges, false, incomingEdges.getEdge());
                 
                 sch.foundShortcut(uFromNode, wToNode,
-                        existingDirectWeight, 0,
+                        existingDirectWeight, time,
                         outgoingEdges.getEdge(), getOrigEdgeCount(outgoingEdges.getEdge()),
                         skippedEdge1, incomingEdgeOrigCount);
             }
@@ -218,6 +220,7 @@ class CoreNodeContractor {
                     // note: flags overwrite weight => call first
                     iter.setFlagsAndWeight(sc.flags, sc.weight);
                     iter.setSkippedEdges(sc.skippedEdge1, sc.skippedEdge2);
+                    iter.setTime(sc.time);
                     setOrigEdgeCount(iter.getEdge(), sc.originalEdges);
                     updatedInGraph = true;
                     break;
@@ -225,7 +228,7 @@ class CoreNodeContractor {
             }
 
             if (!updatedInGraph) {
-                int scId = prepareGraph.shortcut(sc.from, sc.to, sc.flags, sc.weight, sc.skippedEdge1, sc.skippedEdge2);
+                int scId = prepareGraph.shortcutCore(sc.from, sc.to, sc.flags, sc.weight, sc.skippedEdge1, sc.skippedEdge2, sc.time);
                 setOrigEdgeCount(scId, sc.originalEdges);
                 tmpNewShortcuts++;
             }
@@ -322,16 +325,16 @@ class CoreNodeContractor {
         int to;
         int skippedEdge1;
         int skippedEdge2;
-        double dist;
         double weight;
+        long time;
         int originalEdges;
         int flags = PrepareEncoder.getScFwdDir();
 
-        public Shortcut(int from, int to, double weight, double dist) {
+        public Shortcut(int from, int to, double weight, long time) {
             this.from = from;
             this.to = to;
             this.weight = weight;
-            this.dist = dist;
+            this.time = time;
         }
 
         @Override
@@ -368,7 +371,7 @@ class CoreNodeContractor {
 
     interface ShortcutHandler {
         void foundShortcut(int fromNode, int toNode,
-                           double existingDirectWeight, double distance,
+                           double existingDirectWeight, long time,
                            int outgoingEdge, int outgoingEdgeOrigCount,
                            int incomingEdge, int incomingEdgeOrigCount);
 
@@ -393,7 +396,7 @@ class CoreNodeContractor {
 
         @Override
         public void foundShortcut(int fromNode, int toNode,
-                                  double existingDirectWeight, double distance,
+                                  double existingDirectWeight, long time,
                                   int outgoingEdge, int outgoingEdgeOrigCount,
                                   int incomingEdge, int incomingEdgeOrigCount) {
             calcShortcutsResult.shortcutsCount++;
@@ -417,7 +420,7 @@ class CoreNodeContractor {
 
         @Override
         public void foundShortcut(int fromNode, int toNode,
-                                  double existingDirectWeight, double existingDistSum,
+                                  double existingDirectWeight, long time,
                                   int outgoingEdge, int outgoingEdgeOrigCount,
                                   int incomingEdge, int incomingEdgeOrigCount) {
             // FOUND shortcut
@@ -425,11 +428,11 @@ class CoreNodeContractor {
             // and also in the graph for u->w. If existing AND identical weight => update setProperties.
             // Hint: shortcuts are always one-way due to distinct level of every node but we don't
             // know yet the levels so we need to determine the correct direction or if both directions
-            Shortcut sc = new Shortcut(fromNode, toNode, existingDirectWeight, existingDistSum);
+            Shortcut sc = new Shortcut(fromNode, toNode, existingDirectWeight, time);
             if (shortcuts.containsKey(sc))
                 return;
 
-            Shortcut tmpSc = new Shortcut(toNode, fromNode, existingDirectWeight, existingDistSum);
+            Shortcut tmpSc = new Shortcut(toNode, fromNode, existingDirectWeight, time);
             Shortcut tmpRetSc = shortcuts.get(tmpSc);
             // overwrite flags only if skipped edges are identical
             if (tmpRetSc != null && tmpRetSc.skippedEdge2 == incomingEdge && tmpRetSc.skippedEdge1 == outgoingEdge) {
