@@ -174,7 +174,7 @@ public class RouteRequestHandlerTest {
         Assert.assertTrue(routingRequest.getIncludeElevation());
         Assert.assertEquals(WeightingMethod.FASTEST, routingRequest.getSearchParameters().getWeightingMethod());
         Assert.assertEquals(DistanceUnit.METERS, routingRequest.getUnits());
-        Assert.assertTrue(routingRequest.getSearchParameters().getFlexibleMode());
+        Assert.assertFalse(routingRequest.getSearchParameters().getOptimized());
 
         Assert.assertEquals(BordersExtractor.Avoid.CONTROLLED, routingRequest.getSearchParameters().getAvoidBorders());
         Assert.assertArrayEquals(new int[] {115}, routingRequest.getSearchParameters().getAvoidCountries());
@@ -275,12 +275,6 @@ public class RouteRequestHandlerTest {
     @Test(expected = ParameterValueException.class)
     public void invalidRadiusLength() throws Exception {
         request.setMaximumSearchRadii(new Double[] {10.0});
-        new RouteRequestHandler().convertRouteRequest(request);
-    }
-
-    @Test(expected = ParameterValueException.class)
-    public void onlySetOptimizationToFalse() throws Exception {
-        request.setUseContractionHierarchies(true);
         new RouteRequestHandler().convertRouteRequest(request);
     }
 
