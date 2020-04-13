@@ -151,7 +151,6 @@ public class RouteRequestHandler extends GenericHandler {
             params.setMaximumRadiuses(convertMaxRadii(request.getMaximumSearchRadii(), coordinatesLength, profileType));
 
         if(request.hasUseContractionHierarchies()) {
-            params.setFlexibleMode(convertSetFlexibleMode(request.getUseContractionHierarchies()));
             params.setOptimized(request.getUseContractionHierarchies());
         }
 
