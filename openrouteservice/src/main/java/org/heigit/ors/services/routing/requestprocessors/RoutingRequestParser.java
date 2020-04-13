@@ -226,8 +226,6 @@ public class RoutingRequestParser {
 			   boolean b = Boolean.parseBoolean(value);
 			   if (!b && !value.equalsIgnoreCase("false"))
 				   throw new ParameterValueException(RoutingErrorCodes.INVALID_PARAMETER_FORMAT, KEY_OPTIMIZED);
-			   
-			   searchParams.setFlexibleMode(!b);
 			   searchParams.setOptimized(b);
 		   } catch(Exception ex) {
 			   throw new ParameterValueException(RoutingErrorCodes.INVALID_PARAMETER_FORMAT, KEY_OPTIMIZED);

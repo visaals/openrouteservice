@@ -858,8 +858,11 @@ public class RoutingProfile {
                 throw new IllegalArgumentException("Unsupported weighting " + weightingMethod + " for profile + " + profileType);
 
             if(flexibleMode == KEY_FLEX_STATIC)
-                //Speedup order: useCH, useCore, useALT
-                setSpeedups(req, true, true, true);
+                if(optimized)
+                    //Speedup order: useCH, useCore, useALT
+                    setSpeedups(req, true, true, true);
+                else
+                    setSpeedups(req, false, true, true);
 
             if (flexibleMode == KEY_FLEX_PREPROCESSED) {
                 if(optimized)
