@@ -927,8 +927,6 @@ public class RoutingProfile {
             flexibleMode = KEY_FLEX_PREPROCESSED;
         if(profileType == RoutingProfileType.WHEELCHAIR)
             flexibleMode = KEY_FLEX_PREPROCESSED;
-        if(weightingMethod == WeightingMethod.RECOMMENDED)
-            flexibleMode = KEY_FLEX_PREPROCESSED;
 
         if(searchParams.requiresFullyDynamicWeights())
             flexibleMode = KEY_FLEX_FULLY;
