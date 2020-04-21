@@ -941,8 +941,8 @@ public class RoutingProfile {
             flexibleMode = KEY_FLEX_PREPROCESSED;
         if(profileType == RoutingProfileType.WHEELCHAIR)
             flexibleMode = KEY_FLEX_PREPROCESSED;
-        if(weightingMethod == WeightingMethod.RECOMMENDED)
-            flexibleMode = KEY_FLEX_PREPROCESSED;
+        //if(weightingMethod == WeightingMethod.RECOMMENDED)
+        //    flexibleMode = KEY_FLEX_PREPROCESSED;
 
         if(searchParams.requiresFullyDynamicWeights())
             flexibleMode = KEY_FLEX_FULLY;
@@ -966,6 +966,7 @@ public class RoutingProfile {
      */
     private int setWeighting(GHRequest req, int requestWeighting, int profileType, int vehicleType){
         //Defaults
+        /*
         String weighting = VAL_FASTEST;
         String weightingMethod = VAL_FASTEST;
 
@@ -986,11 +987,15 @@ public class RoutingProfile {
                 weightingMethod = VAL_RECOMMENDED_PREF;
             }
         }
+        */
+
+        String weighting = WeightingMethod.getName(requestWeighting);
+        String weightingMethod = weighting;
 
         req.setWeighting(weighting);
         req.getHints().put(KEY_WEIGHTING_METHOD, weightingMethod);
         //Return the weighting as integer to set flexibleMode
-        return weighting == VAL_FASTEST ? WeightingMethod.FASTEST : weighting == VAL_SHORTEST ? WeightingMethod.SHORTEST : WeightingMethod.RECOMMENDED;
+        return requestWeighting;
     }
     /**
      * Set the speedup techniques used for calculating the route.

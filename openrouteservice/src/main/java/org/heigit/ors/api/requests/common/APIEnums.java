@@ -211,7 +211,10 @@ public class APIEnums {
     public enum RoutePreference {
         FASTEST("fastest"),
         SHORTEST("shortest"),
-        RECOMMENDED("recommended");
+        RECOMMENDED("recommended"),
+        RECOMMENDEDR("recommendedr"),
+        RECOMMENDEDS("recommendeds"),
+        RECOMMENDEDNEW("recommendednew");
 
         private final String value;
 

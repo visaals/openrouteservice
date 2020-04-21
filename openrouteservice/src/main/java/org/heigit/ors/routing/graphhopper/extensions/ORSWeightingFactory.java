@@ -18,10 +18,8 @@ import com.graphhopper.routing.util.FootFlagEncoder;
 import com.graphhopper.routing.util.HintsMap;
 import com.graphhopper.routing.util.TraversalMode;
 import com.graphhopper.routing.weighting.*;
-import com.graphhopper.storage.Graph;
 import com.graphhopper.storage.GraphHopperStorage;
 import com.graphhopper.storage.TurnCostExtension;
-import com.graphhopper.storage.index.LocationIndex;
 import com.graphhopper.util.Helper;
 import com.graphhopper.util.PMap;
 import com.graphhopper.util.Parameters;
@@ -85,6 +83,12 @@ public class ORSWeightingFactory implements WeightingFactory {
 				}
 				else if ("recommended".equalsIgnoreCase(strWeighting))
 					result = new OptimizedPriorityWeighting(encoder, hintsMap);
+				else if ("recommendedr".equalsIgnoreCase(strWeighting))
+					result = new OptimizedPriorityWeightingReduce(encoder, hintsMap);
+				else if ("recommendeds".equalsIgnoreCase(strWeighting))
+					result = new OptimizedPriorityWeightingScale(encoder, hintsMap);
+				else if ("recommendednew".equalsIgnoreCase(strWeighting))
+					result = new OptimizedPriorityWeightingNew(encoder, hintsMap);
 				else
 					result = new FastestSafeWeighting(encoder, hintsMap);
 			}
