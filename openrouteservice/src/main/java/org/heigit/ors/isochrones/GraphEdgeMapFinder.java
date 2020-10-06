@@ -15,7 +15,6 @@ package org.heigit.ors.isochrones;
 
 import com.carrotsearch.hppc.IntObjectMap;
 import com.graphhopper.GraphHopper;
-import com.graphhopper.routing.Dijkstra;
 import com.graphhopper.routing.util.EdgeFilter;
 import com.graphhopper.routing.util.FlagEncoder;
 import com.graphhopper.routing.util.TraversalMode;
@@ -36,6 +35,10 @@ import org.heigit.ors.routing.algorithms.TDDijkstraCostCondition;
 import org.heigit.ors.routing.graphhopper.extensions.AccessibilityMap;
 import org.heigit.ors.routing.graphhopper.extensions.ORSEdgeFilterFactory;
 import org.heigit.ors.routing.graphhopper.extensions.weighting.DistanceWeighting;
+import org.heigit.ors.routing.traffic.TrafficSpeedCalculator;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class GraphEdgeMapFinder {
     private GraphEdgeMapFinder() {
@@ -59,13 +62,24 @@ public class GraphEdgeMapFinder {
         if (fromId == -1)
             throw new InternalServerException(IsochronesErrorCodes.UNKNOWN, "The closest node is null.");
         //TODO make dependent on parameters
-        boolean isTD = true;
+        Weighting weighting = createWeighting(parameters, encoder, graph);
 
-        Weighting weighting = parameters.getRangeType() == TravelRangeType.TIME ?
-                isTD ? new TimeDependentFastestWeighting(encoder, new PMap(), graph) : new FastestWeighting(encoder)
-                : new DistanceWeighting(encoder);
-        if (isTD) {
-            TDDijkstraCostCondition dijkstraAlg = new TDDijkstraCostCondition(graph, weighting, parameters.getMaximumRange(), parameters.getReverseDirection(),
+        if (parameters.isTimeDependent()) {
+            //Time-dependent means traffic dependent for isochrones (for now)
+            ((TimeDependentFastestWeighting) weighting).setSpeedCalculator(new TrafficSpeedCalculator(graph, encoder));
+            TDDijkstraCostCondition tdDijkstraCostCondition = new TDDijkstraCostCondition(graph, weighting, parameters.getMaximumRange(), parameters.getReverseDirection(),
+                    TraversalMode.NODE_BASED);
+            tdDijkstraCostCondition.setEdgeFilter(edgeFilter);
+            //Time is defined to be in UTC + 1 because original implementation was for German traffic data
+            //If changed, this needs to be adapted in the traffic storage, too
+            ZonedDateTime zdt = parameters.getRouteParameters().getDeparture().atZone(ZoneId.of("Europe/Berlin"));
+            tdDijkstraCostCondition.calcPath(fromId, Integer.MIN_VALUE, zdt.toInstant().toEpochMilli());
+
+            IntObjectMap<SPTEntry> edgeMap = tdDijkstraCostCondition.getMap();
+            return new AccessibilityMap(edgeMap, tdDijkstraCostCondition.getCurrentEdge(), snappedPosition);
+        } else {
+            // IMPORTANT: It only works with TraversalMode.NODE_BASED.
+            DijkstraCostCondition dijkstraAlg = new DijkstraCostCondition(graph, weighting, parameters.getMaximumRange(), parameters.getReverseDirection(),
                     TraversalMode.NODE_BASED);
             dijkstraAlg.setEdgeFilter(edgeFilter);
             dijkstraAlg.calcPath(fromId, Integer.MIN_VALUE);
@@ -73,14 +87,13 @@ public class GraphEdgeMapFinder {
             IntObjectMap<SPTEntry> edgeMap = dijkstraAlg.getMap();
             return new AccessibilityMap(edgeMap, dijkstraAlg.getCurrentEdge(), snappedPosition);
         }
+    }
 
-        // IMPORTANT: It only works with TraversalMode.NODE_BASED.
-        DijkstraCostCondition dijkstraAlg = new DijkstraCostCondition(graph, weighting, parameters.getMaximumRange(), parameters.getReverseDirection(),
-                TraversalMode.NODE_BASED);
-        dijkstraAlg.setEdgeFilter(edgeFilter);
-        dijkstraAlg.calcPath(fromId, Integer.MIN_VALUE);
+    private static Weighting createWeighting(IsochroneSearchParameters parameters, FlagEncoder encoder, GraphHopperStorage graph) {
+        Weighting weighting = parameters.getRangeType() == TravelRangeType.TIME ?
+                parameters.isTimeDependent() ? new TimeDependentFastestWeighting(encoder, new PMap(), graph) : new FastestWeighting(encoder)
+                : new DistanceWeighting(encoder);
 
-        IntObjectMap<SPTEntry> edgeMap = dijkstraAlg.getMap();
-        return new AccessibilityMap(edgeMap, dijkstraAlg.getCurrentEdge(), snappedPosition);
+        return weighting;
     }
 }

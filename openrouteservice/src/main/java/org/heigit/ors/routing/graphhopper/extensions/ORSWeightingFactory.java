@@ -28,6 +28,7 @@ import com.graphhopper.util.Parameters;
 import org.heigit.ors.routing.ProfileWeighting;
 import org.heigit.ors.routing.graphhopper.extensions.flagencoders.FlagEncoderNames;
 import org.heigit.ors.routing.graphhopper.extensions.weighting.*;
+import org.heigit.ors.routing.traffic.TrafficSpeedCalculator;
 
 import java.io.File;
 import java.nio.file.Path;
