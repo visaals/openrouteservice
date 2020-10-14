@@ -1,3 +1,8 @@
+
+# ignore large pbf files
+openrouteservice/src/main/files/us-northeast-latest.osm.pbf
+docker/your_osm.pbf/*
+
 .metadata/
 
 .recommenders/
